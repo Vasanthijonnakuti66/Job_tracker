@@ -24,9 +24,11 @@ spring:
   # --- JPA / Hibernate settings ---
   jpa:
     hibernate:
-      # "none" = Hibernate won't create/alter tables on its own.
-      # We'll use Flyway migrations (Phase 2) to manage the schema.
-      ddl-auto: none
+      # "validate" = Hibernate checks that entities match the DB schema
+      # but never modifies tables. Flyway handles all schema changes.
+      # If an entity is out of sync with the DB, the app fails fast at
+      # startup — much better than silent data corruption.
+      ddl-auto: validate
     show-sql: false
     # Disable Open-Session-In-View to avoid lazy-loading pitfalls.
     # Forces us to fetch all needed data inside the service layer,

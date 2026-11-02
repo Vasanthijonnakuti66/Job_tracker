@@ -76,6 +76,28 @@
         </dependency>
 
         <!--
+            Flyway: Database migration tool. Think of it like "Git for your
+            database schema." You write numbered SQL files (V1__, V2__, ...),
+            and Flyway runs them in order, tracking which ones have already
+            been applied in a flyway_schema_history table.
+
+            WHY Flyway instead of Hibernate ddl-auto=update?
+            → ddl-auto is fine for prototyping but dangerous in production:
+              it can't rename columns, drop constraints, or migrate data.
+            → Flyway gives you repeatable, version-controlled schema changes
+              that work the same way on every developer's machine and in prod.
+        -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <!-- Flyway needs this extra module to talk to PostgreSQL -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!--
             Test dependencies: JUnit 5 + Mockito + Spring Test utilities.
             The "test" scope means these are only available during testing,
             never packaged into the final JAR.
