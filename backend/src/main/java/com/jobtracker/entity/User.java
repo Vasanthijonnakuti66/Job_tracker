@@ -1,5 +1,6 @@
 package com.jobtracker.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -43,8 +44,9 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    // Stores the bcrypt hash, not the plain-text password.
-    // We'll implement hashing in Phase 4 (security).
+    // Stores the bcrypt hash, never the plain-text password.
+    // @JsonIgnore is a last-line defense if someone accidentally returns a User entity.
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 

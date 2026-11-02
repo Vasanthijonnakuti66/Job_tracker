@@ -1,0 +1,4 @@
+target/
+*.log
+application-local.yml
+uploads/

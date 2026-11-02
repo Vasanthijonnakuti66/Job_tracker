@@ -2,6 +2,7 @@ package com.jobtracker;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Entry point for the Job Tracker application.
@@ -19,6 +20,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *   3. Starts the embedded Tomcat on the configured port
  */
 @SpringBootApplication
+@EnableScheduling
 public class JobTrackerApplication {
 
     public static void main(String[] args) {

@@ -1,24 +1,80 @@
-version: '3.8'
-
 services:
-  # PostgreSQL database for the Job Tracker application.
-  # Data is persisted in a named volume so it survives container restarts.
   postgres:
     image: postgres:16-alpine
-    container_name: jobtracker-db
     environment:
-      POSTGRES_DB: jobtracker
-      POSTGRES_USER: jobtracker
-      POSTGRES_PASSWORD: jobtracker
+      POSTGRES_DB: ${DB_NAME:-jobtracker}
+      POSTGRES_USER: ${DB_USERNAME:-jobtracker}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U jobtracker -d jobtracker"]
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-jobtracker}
+      DB_USERNAME: ${DB_USERNAME:-jobtracker}
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      SERVER_PORT: 8080
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:${FRONTEND_PORT:-3000},http://localhost:5173}
+      ATTACHMENT_STORAGE_PATH: /app/uploads
+      ATTACHMENT_MAX_SIZE_BYTES: ${ATTACHMENT_MAX_SIZE_BYTES:-10485760}
+      ATTACHMENT_MAX_SIZE: ${ATTACHMENT_MAX_SIZE:-10MB}
+      ATTACHMENT_MAX_REQUEST_SIZE: ${ATTACHMENT_MAX_REQUEST_SIZE:-11MB}
+      REMINDERS_ENABLED: ${REMINDERS_ENABLED:-false}
+      REMINDER_CRON: ${REMINDER_CRON:-0 0 * * * *}
+      SMTP_HOST: ${SMTP_HOST:-localhost}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_AUTH: ${SMTP_AUTH:-false}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-false}
+      SMTP_CONNECTION_TIMEOUT_MS: ${SMTP_CONNECTION_TIMEOUT_MS:-5000}
+      SMTP_READ_TIMEOUT_MS: ${SMTP_READ_TIMEOUT_MS:-5000}
+      SMTP_WRITE_TIMEOUT_MS: ${SMTP_WRITE_TIMEOUT_MS:-5000}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@jobtracker.local}
+    ports:
+      - "127.0.0.1:${SERVER_PORT:-8080}:8080"
+    volumes:
+      - attachments_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: /api
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   postgres_data:
+  attachments_data:

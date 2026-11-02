@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: job-tracker-api
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health/db
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: job-tracker-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: job-tracker-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: job-tracker-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: job-tracker-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: job-tracker-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: ATTACHMENT_STORAGE_PATH
+        value: /app/uploads
+      - key: REMINDERS_ENABLED
+        value: "false"
+
+databases:
+  - name: job-tracker-db
+    databaseName: jobtracker
+    user: jobtracker
+    plan: free
+    postgresMajorVersion: "16"
