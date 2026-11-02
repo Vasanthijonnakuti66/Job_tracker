@@ -275,10 +275,12 @@ public class ApplicationService {
                         "Application", "id", applicationId));
     }
 
-    private String normalizeFilter(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-        return value.trim();
+   private String normalizeFilter(String value) {
+    if (value == null || value.isBlank()) {
+        return "";
     }
+    return value.trim();
 }
+
+    }
+

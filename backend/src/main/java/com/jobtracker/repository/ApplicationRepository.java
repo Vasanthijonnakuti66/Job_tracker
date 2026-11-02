@@ -1,3 +1,4 @@
+
 package com.jobtracker.repository;
 
 import com.jobtracker.entity.Application;
@@ -15,36 +16,32 @@ import java.util.Optional;
 /**
  * Repository for Application entities.
  *
- * IMPORTANT PATTERN — Per-user data isolation:
- *
- * Every query method includes userId so users can only access their own data.
- * This is our first line of defense (the service layer is the second).
- *
- * PAGINATION:
- *
- * Methods returning Page<Application> accept a Pageable parameter.
- * Spring Data generates LIMIT/OFFSET SQL and also counts total rows,
- * so the frontend can show "Page 1 of 5".
- *
- * Usage: applicationRepository.findByUserId(userId, PageRequest.of(0, 20))
- *   → Returns the first 20 applications for this user.
+ * Every query includes userId where required
+ * to maintain per-user data isolation.
  */
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
 
     // Get all applications for a user (paginated).
-    // Spring Data translates this to:
-    //   SELECT * FROM applications WHERE user_id = ? LIMIT ? OFFSET ?
     Page<Application> findByUserId(Long userId, Pageable pageable);
 
+    // Search applications with optional filters.
     @Query("""
-            SELECT a FROM Application a
-            WHERE a.user.id = :userId
-              AND (:company IS NULL OR LOWER(a.companyName) LIKE LOWER(CONCAT('%', :company, '%')))
-              AND (:role IS NULL OR LOWER(a.role) LIKE LOWER(CONCAT('%', :role, '%')))
-              AND (:status IS NULL OR a.status = :status)
-              AND (:fromDate IS NULL OR a.dateApplied >= :fromDate)
-              AND (:toDate IS NULL OR a.dateApplied <= :toDate)
-            """)
+        SELECT a FROM Application a
+        WHERE a.user.id = :userId
+          AND (
+              COALESCE(:company, '') = ''
+              OR LOWER(a.companyName) LIKE
+                 CONCAT('%', LOWER(CAST(:company AS string)), '%')
+          )
+          AND (
+              COALESCE(:role, '') = ''
+              OR LOWER(a.role) LIKE
+                 CONCAT('%', LOWER(CAST(:role AS string)), '%')
+          )
+          AND (:status IS NULL OR a.status = :status)
+          AND (:fromDate IS NULL OR a.dateApplied >= :fromDate)
+          AND (:toDate IS NULL OR a.dateApplied <= :toDate)
+        """)
     Page<Application> searchByUser(
             @Param("userId") Long userId,
             @Param("company") String company,
@@ -55,16 +52,18 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             Pageable pageable
     );
 
-    // Find a specific application, but only if it belongs to this user.
-    // Prevents user A from accessing user B's application by guessing the ID.
+    // Find an application only if it belongs to the specified user.
     Optional<Application> findByIdAndUserId(Long id, Long userId);
 
-    // Filter by status (e.g., "show me all my INTERVIEW-stage applications")
-    List<Application> findByUserIdAndStatus(Long userId, ApplicationStatus status);
+    // Filter applications by status.
+    List<Application> findByUserIdAndStatus(
+            Long userId,
+            ApplicationStatus status
+    );
 
-    // Count applications per status — used by the dashboard.
+    // Count applications per status.
     long countByUserIdAndStatus(Long userId, ApplicationStatus status);
 
-    // Total applications for a user — used by analytics.
+    // Count all applications for a user.
     long countByUserId(Long userId);
 }
