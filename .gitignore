@@ -30,6 +30,9 @@ dist/
 .env
 .env.local
 .env.*.local
+# Environment variables and secrets
+.env*
+!.env.example
 
 # === OS ===
 .DS_Store
