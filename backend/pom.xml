@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Spring Boot parent POM: gives us curated dependency versions,
+        sensible plugin defaults, and the spring-boot-maven-plugin.
+        We don't have to manage version numbers for most Spring libraries.
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.0</version>
+        <relativePath/> <!-- lookup from Maven Central -->
+    </parent>
+
+    <groupId>com.jobtracker</groupId>
+    <artifactId>job-tracker</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>Job Tracker</name>
+    <description>Job Application Tracking System — Spring Boot Backend</description>
+
+    <properties>
+        <!--
+            We target Java 17 to match the currently installed JDK.
+            When you install JDK 21+, change this to 21 for the latest
+            LTS features (records, sealed classes, pattern matching, etc.).
+            Java records (used in our DTOs) are fully supported from Java 16+.
+        -->
+        <java.version>17</java.version>
+    </properties>
+
+    <dependencies>
+        <!--
+            spring-boot-starter-web: Pulls in Spring MVC, embedded Tomcat,
+            Jackson (JSON serialization), and everything needed to build
+            REST APIs. This single dependency replaces dozens of manual ones.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!--
+            spring-boot-starter-data-jpa: Pulls in Hibernate (ORM) and
+            Spring Data JPA (repository abstractions). Lets us map Java
+            objects to database tables and write queries as method names.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!--
+            spring-boot-starter-validation: Adds Bean Validation (Jakarta
+            Validation) so we can annotate DTOs with @NotBlank, @Size, etc.
+            and Spring will auto-validate incoming request bodies.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!--
+            PostgreSQL JDBC driver: The actual wire-protocol library that
+            talks to PostgreSQL. Marked "runtime" because our Java code
+            never imports it directly — Hibernate uses it under the hood.
+        -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--
+            Test dependencies: JUnit 5 + Mockito + Spring Test utilities.
+            The "test" scope means these are only available during testing,
+            never packaged into the final JAR.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+                spring-boot-maven-plugin: Creates an executable "fat JAR"
+                that bundles the app + all dependencies + embedded Tomcat.
+                You can run it with: java -jar target/job-tracker-0.0.1-SNAPSHOT.jar
+            -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

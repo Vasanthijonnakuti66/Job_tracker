@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database for the Job Tracker application.
+  # Data is persisted in a named volume so it survives container restarts.
+  postgres:
+    image: postgres:16-alpine
+    container_name: jobtracker-db
+    environment:
+      POSTGRES_DB: jobtracker
+      POSTGRES_USER: jobtracker
+      POSTGRES_PASSWORD: jobtracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobtracker -d jobtracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

@@ -1,0 +1,37 @@
+# ============================================================
+# Job Tracker — Application Configuration
+# ============================================================
+# Values like ${DB_HOST:localhost} mean:
+#   "Use the DB_HOST environment variable if set,
+#    otherwise fall back to 'localhost'."
+# This keeps secrets out of source code.
+# ============================================================
+
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: job-tracker
+
+  # --- Database connection pool (HikariCP, the Spring Boot default) ---
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:jobtracker}
+    username: ${DB_USERNAME:jobtracker}
+    password: ${DB_PASSWORD:jobtracker}
+    # Driver class is auto-detected from the URL — no need to specify it.
+
+  # --- JPA / Hibernate settings ---
+  jpa:
+    hibernate:
+      # "none" = Hibernate won't create/alter tables on its own.
+      # We'll use Flyway migrations (Phase 2) to manage the schema.
+      ddl-auto: none
+    show-sql: false
+    # Disable Open-Session-In-View to avoid lazy-loading pitfalls.
+    # Forces us to fetch all needed data inside the service layer,
+    # which is a best practice for clean architecture.
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
