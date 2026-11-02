@@ -36,7 +36,7 @@ spring:
 
   # --- Database connection pool (HikariCP, the Spring Boot default) ---
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:jobtracker}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:jobtracker}?sslmode=${DB_SSL_MODE:disable}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     # Driver class is auto-detected from the URL — no need to specify it.

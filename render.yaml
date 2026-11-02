@@ -1,4 +1,3 @@
-
 services:
   - type: web
     name: job-tracker-api
@@ -15,6 +14,9 @@ services:
 
       - key: DB_PORT
         value: "5432"
+
+      - key: DB_SSL_MODE
+        value: require
 
       - key: DB_NAME
         sync: false
